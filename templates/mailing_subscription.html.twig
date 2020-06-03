@@ -1,0 +1,28 @@
+{#
+/**
+ */
+
+{{ attach_library('mailing/nubetags') }}
+
+{% spaceless %}
+{% if elements.content %}
+{% set nube = elements.content %}
+{% endif %}
+{% if nube.0|length >0  %}
+    <div id="tagcloud">
+     {% for tag in nube.0 %}
+     	<a href="{{ nube.1 }}?tematica_{{ nube.2 }}{% if nube.2== 'imagen' %}e{% endif %}s={{ tag.tid }}" rel="{{ tag.count }}">{{ tag.name }}</a>&nbsp;&nbsp;
+    {% endfor %}
+    </div>
+{% endif %}
+{% endspaceless %}
+#}
+{{ attach_library('mailing_subscriptions/mailing') }}
+
+<div id="dialog" title="Newsletter">
+
+	{{elements}}
+</div>
+
+
+

@@ -1,0 +1,80 @@
+#block-mailingsubscriptionblock {
+    display: inherit;
+    position: fixed;
+    width: 350px;
+    bottom: 5%;
+    right: 5%;
+    z-index: 50;
+}
+.block-mailingsubscriptionblock {
+  display:none;
+}
+
+.ui-dialog .ui-dialog-titlebar .ui-dialog-title,.pageList h1 {
+    color: #ff7f00;
+    background-repeat: no-repeat;
+    padding-left: 37px;
+    padding-top: 3px;
+    position:relative;
+}
+
+
+.ui-dialog .ui-dialog-titlebar {
+    font-weight: bold;
+    background: #f3f4ee;
+    border-style: solid;
+    border-radius: 0;
+    border-width: 0 0 1px 0;
+    border-color: #ccc;
+}
+.ui-dialog .form-checkboxes .form-item-options-og{
+  display:none;
+
+}
+
+.ui-dialog .form-checkboxes .form-item label.option {
+    margin-left: 19px;
+    font-size: 15px;
+    font-weight: normal;
+    margin-top: 6px;
+}
+
+.ui-dialog .form-checkboxes .form-item label.option.marcado {
+    color: #ff7f00 !important;
+}
+
+.ui-dialog .form-submit:hover {
+    background: #fff;
+    color: #000;
+    border: 1px solid #000;
+}
+.ui-dialog .form-submit {
+    width: 75%;
+    margin: 0;
+    border-radius: 0!important;
+    background: #fff!important;
+    border: 1px solid #ff7f00!important;
+    color: #ff7f00!important;
+    padding: 10px 0!important;
+    font-size: 1em;
+    margin: 20px 0;
+    -moz-transition: all 0.5s ease-out;
+    -o-transition: all 0.5s ease-out;
+    -webkit-transition: all 0.5s ease-out;
+    transition: all 0.5s ease-out;
+}
+
+
+.ui-dialog .form-item-subscribe{
+  flex-direction: row;
+}
+#listado th{
+  letter-spacing: 0;
+}
+.agree{
+  color: #ff7f00 ;
+  font-size: 10px;
+
+
+}
+

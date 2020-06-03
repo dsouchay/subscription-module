@@ -1,0 +1,39 @@
+<?php
+
+namespace Drupal\test\Plugin\Block;
+
+use Drupal\Core\Block\BlockBase;
+
+/**
+ * Provides a 'Athlete of the month' block.
+ *
+ * @Block(
+ *   id = "testblock",
+ *   admin_label = @Translation("Test Block"),
+ *   category = @Translation("Test Block"),
+ * )
+ */
+class TestBlock extends BlockBase {
+    
+    public function build(){
+        
+        $ffmpeg = \Drupal::service('php_ffmpeg');
+        $video =  $ffmpeg->open('\home\media\test.mov');
+/*        
+        $build['athlete_of_the_month_block'] = [
+            '#theme' => 'block__block_content_athlete_of_the_month',
+            '#fields' => [                
+                'field_aotmb_athlete_of_the_month' =>  $this->transformNodesToPaint($node),
+                'field_aotmb_format' => $config['field_aotmb_format'],
+            ]
+        ];
+*/            
+        
+        $build['test'] = [
+            '#markup' => "<p>hola</p>",
+        ];
+        return $build;
+        
+    }
+   
+}

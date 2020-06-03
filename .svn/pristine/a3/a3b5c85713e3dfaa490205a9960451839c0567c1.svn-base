@@ -1,0 +1,7 @@
+name: Atos Test
+description: 'Atos Test'
+type: module
+package: ATOS
+version: '8.x-1.0'
+core: '8.x'
+project: 'atostest'

@@ -1,0 +1,14 @@
+tets.test:
+  path: '/test'
+  defaults:
+    _controller: '\Drupal\test\Controller\TestController::content'
+    _title: 'Execute pending tasks'
+  requirements:
+    _permission: 'view content'
+tets.busqueda:
+  path: '/test/busqueda'
+  defaults:
+    _form: '\Drupal\test\Form\TestBusquedaForm'
+    _title: 'Buscador'
+  requirements:
+    _permission: 'view content'

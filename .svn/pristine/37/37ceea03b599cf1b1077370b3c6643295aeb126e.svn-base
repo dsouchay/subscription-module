@@ -1,0 +1,141 @@
+<?php
+
+namespace Drupal\test\Form;
+
+use Drupal\Core\Form\FormBase;
+use Drupal\Core\Form\FormStateInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+
+/**
+ * Provides a form for administering a single book's hierarchy.
+ *
+ * @internal
+ */
+class TestBusquedaForm extends FormBase {
+
+  /**
+   * Constructs a new TestBusquedaForm.
+   */
+  public function __construct() {
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    $entity_manager = $container->get('entity.manager');
+    return new static();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getFormId() {
+    return 'test_busqueda';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildForm(array $form, FormStateInterface $form_state) {
+    $form['title'] = [
+      '#title' => t('Texto'), 
+      '#type' => 'textfield',
+      '#default_value' => "",
+      '#maxlength' => 255,
+      '#size' => 40,
+    ];
+    $form['buscar'] = [
+      '#type' => 'submit',
+      '#value' => $this->t('buscar'),
+    ];
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitForm(array &$form, FormStateInterface $form_state) {
+      $index = \Drupal\search_api\Entity\Index::load('contenidos');
+      $query = $index->query();
+      
+      // Change the parse mode for the search.
+      $parse_mode = \Drupal::service('plugin.manager.search_api.parse_mode')
+      ->createInstance('direct');
+      $parse_mode->setConjunction('OR');
+      $query->setParseMode($parse_mode);
+      
+      
+      $keys = $form_state->getValue('title');
+      
+      // Set fulltext search keywords and fields.
+      $query->keys($keys);
+      $query->setFulltextFields(['title', 'body']);
+      
+      // Set additional conditions.
+      
+      $query->addCondition('status', 1);
+      //->addCondition('type', 'video');
+      
+      // Add more complex conditions.
+      // (In this case, a condition for a specific datasource).
+      $time = \Drupal::service('datetime.time')->getRequestTime();
+      /*
+      $conditions = $query->createConditionGroup('OR');
+      $conditions->addCondition('search_api_datasource', 'entity:node', '<>')
+      ->addCondition('created', $time - 7 * 24 * 3600, '>=');
+      $query->addConditionGroup($conditions);
+      */
+      // Restrict the search to specific languages.
+      $query->setLanguages(['en', 'es']);
+      
+      // Do paging.
+      $query->range(0, 10);
+      
+      // Set additional options.
+      // (In this case, retrieve facets, if supported by the backend.)
+      $server = $index->getServerInstance();
+      if ($server->supportsFeature('search_api_facets')) {
+          $query->setOption('search_api_facets', [
+              'type' => [
+                  'field' => 'type',
+                  'limit' => 20,
+                  'operator' => 'AND',
+                  'min_count' => 1,
+                  'missing' => TRUE,
+              ],
+          ]);
+      }
+      
+      // Set one or more tags for the query.
+      // @see hook_search_api_query_TAG_alter()
+      // @see hook_search_api_results_TAG_alter()
+      $query->addTag('custom_search');
+      
+      // Execute the search.
+      $results = $query->execute();
+      
+      echo "Result count: {$results->getResultCount()}\n";
+      
+      $array = $results->getResultItems();
+      
+      //$ids = implode(', ', array_keys($results->getResultItems()));
+      $ids = implode(', ', array_keys($results->getResultItems()));
+      
+      $string = json_encode($results->getResultItems());    
+      
+      echo "Returned IDs: $ids.\n";
+      $facets = $results->getExtraData('search_api_facets', []);
+      echo 'Facets data: ' . var_export($facets, TRUE);
+      
+      drupal_set_message("Returned IDs: ".$string."\n");
+  }
+
+}

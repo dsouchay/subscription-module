@@ -1,0 +1,304 @@
+<?php namespace Drupal\test\Controller;
+
+use Clarifai\API\ClarifaiClient;
+use Clarifai\DTOs\Inputs\ClarifaiFileImage;
+use Clarifai\DTOs\Inputs\ClarifaiURLImage;
+use Clarifai\DTOs\Outputs\ClarifaiOutput;
+use Clarifai\DTOs\Predictions\Concept;
+use Drupal\Core\Controller\ControllerBase;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Exception;
+
+
+/**
+ * Provides route responses for search indexes.
+ */
+class TestController extends ControllerBase {
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container) {
+        /** @var static $controller */
+        $controller = parent::create($container);
+        return $controller;
+    }
+    
+    public function content(){
+        
+        $executionStartTime = microtime(true);
+        $client = new ClarifaiClient('9c0282623d344cf2ae00fe474620c887');//-> Api de mi sesión
+        $model = $client->publicModels()->generalModel();
+        
+     //   $input = new ClarifaiURLImage("https://samples.clarifai.com/metro-north.jpg");
+       
+        /*
+         * Setear el proxy con las variables del curl en este fichero en la función : makeBaseCurl()
+         * 
+         * /website/vendor/clarifai/clarifai-php/src/Clarifai/API/ClarifaiHttpClient.php
+         * 	
+         * //Quitar LUEGOOO
+		    curl_setopt($ch, CURLOPT_PROXY, '193.56.47.8');
+			curl_setopt($ch, CURLOPT_PROXYPORT, '8080');
+			 
+         * */
+        
+        
+        
+        $input = new ClarifaiURLImage("http://www.trainingnonstop.com/sites/all/themes/training/img/runo.jpg");
+        $response = $model->predict($input)
+        ->withLanguage('es')
+        ->withModelVersionID("aa9ca48295b37401f8af92ad1af0d91d") // Versión ID del modelo de mi sesión
+        ->executeSync();
+        
+        if ($response->isSuccessful()) {
+            $output = $response->get();
+
+            // Confituración para la traducción
+            $key = 'f81fec6687c6466f8f9a8aee68758e9b';
+            $host = "https://api.cognitive.microsofttranslator.com";
+            $path = "/translate?api-version=3.0";
+            $params = "&to=en";
+            
+            
+            $text = "";   
+            echo "Predicted concepts:<br>";
+            foreach ($output->data() as $concept) {
+                if ($text) $text=$text.", ";
+                echo $concept->name() . ': ' . $concept->value() . "<br>";
+                $text=$text.$concept->name();
+            }
+        } else {
+            echo "Response is not successful. Reason: <br>";
+            echo $response->status()->description() . "<br>";
+            echo $response->status()->errorDetails() . "<br>";
+            echo "Status code: " . $response->status()->statusCode();
+        }
+
+        
+        if (!function_exists('com_create_guid')) {
+            function com_create_guid() {
+                return sprintf( '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+                    mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ),
+                    mt_rand( 0, 0xffff ),
+                    mt_rand( 0, 0x0fff ) | 0x4000,
+                    mt_rand( 0, 0x3fff ) | 0x8000,
+                    mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff )
+                    );
+            }
+        }
+   
+        
+        function Translate ($host, $path, $key, $params, $content) {
+            
+            $headers = "Content-type: application/json\r\n" .
+                "Content-length: " . strlen($content) . "\r\n" .
+                "Ocp-Apim-Subscription-Key: $key\r\n" .
+                "X-ClientTraceId: " . com_create_guid() . "\r\n";
+            
+            // NOTE: Use the key 'http' even if you are making an HTTPS request. See:
+            // http://php.net/manual/en/function.stream-context-create.php
+            $options = array (
+                'http' => array (
+                    'header' => $headers,
+                    'method' => 'POST',
+                    'content' => $content,
+                    
+                    // Quitar luego, ponerlo en el setting y tomar esto del setting para que surta efecto si está configurado. 
+                    'proxy' => 'tcp://193.56.47.8:8080',
+                    'request_fulluri' => true
+                )
+            );
+            $context  = stream_context_create ($options);
+            $result = file_get_contents ($host . $path . $params, false, $context);
+            return $result;
+        }
+        
+        //cuanto demora en traer las palabras claves.
+        $executionEndTime = microtime(true);
+        $seconds = $executionEndTime - $executionStartTime;        
+        echo "This script took ".round($seconds)." to execute.";
+        
+        $executionStartTime = $executionEndTime;
+        $requestBody = array (
+            array (
+                'Text' => $text,
+            ),
+        );
+        $content = json_encode($requestBody);
+        $result = Translate ($host, $path, $key, $params, $content);
+        $json = json_encode(json_decode($result), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        echo $json. "<br>";
+
+       //Cuanto demora en traducir
+        $executionEndTime = microtime(true);
+        $seconds = $executionEndTime - $executionStartTime;
+        echo "This script took ".round($seconds)." to execute.";
+        exit;
+        
+        
+        //PARA PROBAR CON UN FICHERO FÍSICO
+        $executionStartTime = microtime(true);
+        
+        $client = new ClarifaiClient('9c0282623d344cf2ae00fe474620c887');
+        $model = $client->publicModels()->generalModel();
+        $file = "/var/www/private/imagen/201901/PH74.jpg";
+       // $file = "/home/media/Desktop/PP117.jpg";
+           $response = $client->publicModels()->generalModel()->predict(
+               new ClarifaiFileImage(file_get_contents($file,FILE_USE_INCLUDE_PATH)))
+            ->executeSync();
+            if ($response->isSuccessful()) {
+                /** @var ClarifaiOutput $output */
+                $output = $response->get();
+                
+                echo "Predicted concepts:<br>";
+                /** @var Concept $concept */
+                foreach ($output->data() as $concept) {
+                    echo $concept->name() . ': ' . $concept->value() . "<br>";
+                }
+            } else {
+                echo "Response is not successful. Reason: <br>";
+                echo $response->status()->description() . "<br>";
+                echo $response->status()->errorDetails() . "<br>";
+                echo "Status code: " . $response->status()->statusCode();
+            }
+            
+            $executionEndTime = microtime(true);
+            
+            //The result will be in seconds and milliseconds.
+            $seconds = $executionEndTime - $executionStartTime;
+            
+            //Print it out
+            echo "This script took ".round($seconds)." to execute.";
+        exit;
+        
+        
+        
+        
+     //   $time1 = time();
+        //generar rendicion
+     //   $result = shell_exec("/usr/bin/ffmpeg -i /var/www/html/test.mov -s 320x240 -b 212k -strict -2 /var/www/html/export-x264.mp4");
+        //obtener datos del video
+       // $duration = shell_exec("/usr/bin/ffprobe -i /var/www/html/test.mov  -show_format 2>&1 | sed -n 's/duration=//p'");
+        
+     //   $time2 = time();
+        
+      //  $duracion = $time2-$time1;
+        
+     //   echo $time2-$time1;
+/*        
+        $ffmpeg = \Drupal::service('php_ffmpeg');
+        $video =  $ffmpeg->open('/var/www/html/test.mov');
+        
+        
+        $format = new \FFMpeg\Format\Video\X264();
+        $format->on('progress', function ($video, $format, $percentage) {
+            echo "$percentage % transcoded";
+        });
+            
+            $format
+            ->setKiloBitrate(1000)
+            ->setAudioChannels(2)
+            ->setAudioKiloBitrate(256);
+            
+            $video->save($format, '/var/www/html/video.mp4');
+*/        
+        
+        //$video->filters()->resize(new \FFMpeg\Coordinate\Dimension(320, 240))->synchronize();
+/*        
+        $video
+        ->frame(\FFMpeg\Coordinate\TimeCode::fromSeconds(10))
+        ->save('/var/www/html/frame.jpg');*/
+        
+        //$video->save(new \FFMpeg\Format\Video\X264(), '/var/www/html/export-wmv.wmv');
+        
+/*        
+        $video
+        ->save(new \FFMpeg\Format\Video\X264(), 'export-x264.mp4')
+        ->save(new \FFMpeg\Format\Video\WMV(), 'export-wmv.wmv')
+  
+        ->save(new \FFMpeg\Format\Video\WebM(), 'export-webm.webm');
+*/        
+/*                    echo "Chequeando thumbnail".$uri."----".$k."<br/>";
+
+        $data =  $video->getFormat();
+        $duration = $data->get('duration');
+        
+*/      $nid = 77;
+        $contentTypeID = 'VI';
+        $node =\Drupal::entityTypeManager()->getStorage('node')->load($nid);
+        if ($node){
+            
+//             $uri = $node->field_preview->entity
+            
+//             ->getFileUri();
+            
+//             $k = file_exists($uri);
+          $media = $node->field_material->entity;
+
+            
+        
+          if ($media){
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+                switch ($contentTypeID) {
+                    case 'VI':
+                        if ($this->chequeaMedia($media)){
+                            $mediarendicion = $media->field_rendiciones->entity;
+                            if ($mediarendicion and $this->chequeaMedia($mediarendicion))
+                              //  throw new Exception('Error en el fichero media rendición del nodo '.$nid);
+                               echo "si";
+                        } else  echo "No";//throw new Exception('Error en el fichero media material del nodo '.$nid);
+                            
+                        break;
+                }
+          }
+      }
+        
+        exit;
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        $build['test'] = [
+            '#markup' =>\Drupal\Core\Render\Markup::create('<p>duracion '.$duration.'<div><form method="get"><input class="btn btn-primary" type="submit" value="See More" /></div></form></p>')
+            
+            
+            ,
+        ];
+        return $build;
+        
+    }
+    
+    
+
+    
+    
+    
+
+    public function chequeaMedia($mediarendicion,$tipo='video'){
+        if ($mediarendicion){
+            $campo = "field_media_".video."_file";
+          //  $file = $mediarendicion->field_media_video_file->entity;
+            $file = $mediarendicion->{$campo}->entity;
+            return ($file and $this->chequeaFicheroEntidad($file));
+        }
+        return false;
+    }
+    
+    
+    public function chequeaFicheroEntidad($file){
+        if ($file)
+            $uri = $file->getFileUri();
+            $k = file_exists($uri);
+            echo "Chequeando ".$uri."----".$k."<br/>";
+            if (!$k ){
+                \Drupal::logger('migracion_contenidos')->error(" El fichero del media ".$uri." no se encuentra .");
+                return false;
+            }
+            return true;
+    }
+}

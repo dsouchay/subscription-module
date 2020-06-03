@@ -1,0 +1,7 @@
+mailing_subscriptions.paths:
+  path: '/subscriptions'
+  defaults:
+    _controller: '\Drupal\mailing_subscriptions\Controller\MailingSubscriptionController::content'
+    _title: 'List of subscriptions'
+  requirements:
+    _permission: 'view content'

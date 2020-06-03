@@ -1,0 +1,7 @@
+name: Mailing subscription
+description: 'Arcmedia Test'
+type: module
+package: Arcmedia
+version: '8.x-1.0'
+core: '8.x'
+project: 'ArcmediaTest'

@@ -1,0 +1,77 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the mailing_subscriptios module
+ *
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function mailing_subscriptions_schema() {
+    $schema['mailing_subscriptions'] = [
+        'description' => 'Stores the mailing subscriptions ',
+        'fields' => array(
+            'id' => array(
+                'description' => 'Subscription ID',
+                'type' => 'serial',
+                'unsigned' => TRUE,
+                'not null' => TRUE,
+
+            ),
+            'mail' => array(
+                'description' => 'User mail',
+                'type' => 'varchar',
+                'length' => 255,
+                'not null' => FALSE,
+                'default' => NULL,
+            ),
+            'ip' => array(
+                'description' => 'User ip',
+                'type' => 'varchar',
+                'length' => 20,
+                'not null' => FALSE,
+                'default' => NULL,
+            ),
+            'RequestDateTime' => array(
+                'description' => 'Subscription date and time',
+                'type' => 'datetime',
+                'mysql_type' => 'datetime',
+                'not null' => FALSE,
+                'default' => NULL,
+            ),
+            'optionG' => array(
+                'description' => 'State code “General”',
+                'type' => 'varchar',
+                'length' => 1,
+                'not null' => FALSE,
+                'default' => '0',
+            ),
+            //, , , and .
+            'optionHB' => array(
+                'description' => 'State code “Health and Beauty”',
+                'type' => 'varchar',
+                'length' => 1,
+                'not null' => FALSE,
+                'default' => '0',
+            ),
+            'optionSL' => array(
+                'description' => 'State code “Sports and Leisure”',
+                'type' => 'varchar',
+                'length' => 1,
+                'not null' => FALSE,
+                'default' => '0',
+            ),
+            'optionGG' => array(
+                'description' => 'State code “Garden Greens”',
+                'type' => 'varchar',
+                'length' => 1,
+                'not null' => FALSE,
+                'default' => '0',
+            ),
+        ),
+        'primary key' => array('id'),
+    ];
+    return $schema;
+}

@@ -1,0 +1,52 @@
+
+<div class="pageList">
+
+<h1 >Listado de Subscripciones</h1>
+{% set listado = elements.variables.content %}
+
+
+{% if listado|length > 0 %}
+
+<table id="listado" class="display responsive nowrap" style="width:100%">
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>email</th>
+                <th>ip</th>
+                <th>Date</th>
+                <th>General</th>
+                <th>Health and Beauty</th>
+                <th>Sports and Leisure</th>
+                <th>Garden Greens</th>
+            </tr>
+        </thead>
+        <tbody>
+         {% for key, elememt in listado %}
+
+            <tr>
+                <td> {{ elememt["id"]}}</td>
+                <td>{{ elememt["mail"]}}</td>
+                <td>{{ elememt["ip"]}}</td>
+                <td>{{ elememt["RequestDateTime"]|date("d/m/Y")}}</td>
+                <td>{{ elememt["optionG"] ? 'si' : 'no'}}</td>
+                <td>{{ elememt["optionHB"] ? 'si' : 'no'}}</td>
+                <td>{{ elememt["optionSL"] ? 'si' : 'no'}}</td>
+                <td>{{ elememt["optionGG"] ? 'si' : 'no'}}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+</table>
+
+
+
+{%else %}
+<h3 class="module-title text-uppercase">
+	No se han realizado suscripciones hasta el momento.
+</h3>
+
+{% endif%}
+
+
+</div>
+
+

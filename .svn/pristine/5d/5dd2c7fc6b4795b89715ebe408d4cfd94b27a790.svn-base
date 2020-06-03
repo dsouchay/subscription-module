@@ -1,0 +1,75 @@
+<?php namespace Drupal\test\Controller;
+
+use Drupal\Core\Controller\ControllerBase;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+
+
+/**
+ * Provides route responses for search indexes.
+ */
+class TestController extends ControllerBase {
+    /**
+     * {@inheritdoc}
+     */
+    public static function create(ContainerInterface $container) {
+        /** @var static $controller */
+        $controller = parent::create($container);
+        return $controller;
+    }
+    
+    public function content(){
+        $time1 = time();
+        //generar rendicion
+        $result = shell_exec("/usr/bin/ffmpeg -i /var/www/html/test.mov -s 320x240 -b 212k -strict -2 /var/www/html/export-x264.mp4");
+        //obtener datos del video
+        $duration = shell_exec("/usr/bin/ffprobe -i /var/www/html/test.mov  -show_format 2>&1 | sed -n 's/duration=//p'");
+        
+        $time2 = time();
+        
+        $duracion = $time2-$time1;
+        
+        echo $time2-$time1;
+/*        
+        $ffmpeg = \Drupal::service('php_ffmpeg');
+        $video =  $ffmpeg->open('/var/www/html/test.mov');
+        
+        
+        $format = new \FFMpeg\Format\Video\X264();
+        $format->on('progress', function ($video, $format, $percentage) {
+            echo "$percentage % transcoded";
+        });
+            
+            $format
+            ->setKiloBitrate(1000)
+            ->setAudioChannels(2)
+            ->setAudioKiloBitrate(256);
+            
+            $video->save($format, '/var/www/html/video.mp4');
+*/        
+        
+        //$video->filters()->resize(new \FFMpeg\Coordinate\Dimension(320, 240))->synchronize();
+/*        
+        $video
+        ->frame(\FFMpeg\Coordinate\TimeCode::fromSeconds(10))
+        ->save('/var/www/html/frame.jpg');*/
+        
+        //$video->save(new \FFMpeg\Format\Video\X264(), '/var/www/html/export-wmv.wmv');
+        
+/*        
+        $video
+        ->save(new \FFMpeg\Format\Video\X264(), 'export-x264.mp4')
+        ->save(new \FFMpeg\Format\Video\WMV(), 'export-wmv.wmv')
+  
+        ->save(new \FFMpeg\Format\Video\WebM(), 'export-webm.webm');
+*/        
+/*        
+        $data =  $video->getFormat();
+        $duration = $data->get('duration');
+*/          
+        $build['test'] = [
+            '#markup' => "<p>duracion ".$duration."</p>",
+        ];
+        return $build;
+        
+    }
+}
